@@ -3,7 +3,7 @@ import {createReadStream} from 'node:fs';
 import {expectType} from 'tsd';
 import {
 	type FileTypeResult as FileTypeResultBrowser,
-} from './browser.js';
+} from '../browser.js';
 import {
 	fileTypeFromBlob,
 	fileTypeFromBuffer,
@@ -16,7 +16,7 @@ import {
 	type ReadableStreamWithFileType,
 	type FileExtension,
 	type MimeType,
-} from './index.js';
+} from '../index.js';
 
 expectType<Promise<FileTypeResult | undefined>>(fileTypeFromBuffer(Buffer.from([0xFF, 0xD8, 0xFF])));
 expectType<Promise<FileTypeResult | undefined>>(fileTypeFromBuffer(new Uint8Array([0xFF, 0xD8, 0xFF])));

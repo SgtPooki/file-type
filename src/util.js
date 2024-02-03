@@ -1,3 +1,5 @@
+import { bufferToString } from './buffer-dataview-tools.js';
+
 export function stringToBytes(string) {
 	return [...string].map(character => character.charCodeAt(0)); // eslint-disable-line unicorn/prefer-code-point
 }
@@ -5,12 +7,12 @@ export function stringToBytes(string) {
 /**
 Checks whether the TAR checksum is valid.
 
-@param {Buffer} buffer - The TAR header `[offset ... offset + 512]`.
+@param {Uint8Array} buffer - The TAR header `[offset ... offset + 512]`.
 @param {number} offset - TAR header offset.
 @returns {boolean} `true` if the TAR checksum is valid, otherwise `false`.
 */
 export function tarHeaderChecksumMatches(buffer, offset = 0) {
-	const readSum = Number.parseInt(buffer.toString('utf8', 148, 154).replace(/\0.*$/, '').trim(), 8); // Read sum in header
+	const readSum = Number.parseInt(bufferToString(buffer, 'utf8', 148, 154).replace(/\0.*$/, '').trim(), 8); // Read sum in header
 	if (Number.isNaN(readSum)) {
 		return false;
 	}

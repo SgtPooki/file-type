@@ -1,6 +1,7 @@
 #!/usr/bin/node
 import process from 'node:process';
-import {fileTypeFromFile} from './index.js';
+import {readFile} from 'node:fs/promises';
+import {fileTypeFromBuffer} from './index.js';
 
 const [file] = process.argv.slice(2);
 
@@ -9,7 +10,9 @@ if (!file) {
 	process.exit();
 }
 
-const fileType = await fileTypeFromFile(file);
+const buffer = await readFile(file);
+
+const fileType = await fileTypeFromBuffer(buffer);
 
 if (fileType) {
 	console.log(`MIME-type: ${fileType.mime}`);

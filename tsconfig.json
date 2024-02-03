@@ -1,0 +1,17 @@
+{
+  "extends": "aegir/src/config/tsconfig.aegir.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "allowJs": true,
+    "noImplicitAny": false
+  },
+  "include": [
+    "src",
+    "test",
+    "global.d.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

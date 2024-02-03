@@ -1,46 +1,61 @@
-import {Buffer} from 'node:buffer';
-import * as Token from 'token-types';
-import * as strtok3 from 'strtok3/core';
+import * as Token from './basic-token-type.js';
+// import * as strtok3 from 'strtok3/core';
 import {
 	stringToBytes,
 	tarHeaderChecksumMatches,
 	uint32SyncSafeToken,
 } from './util.js';
 import {extensions, mimeTypes} from './supported.js';
+// import { DataViewTokenizer } from './dataview-tokenizer.js';
+import { BufferTokenizer, EndOfStreamError } from './buffer-tokenizer.js';
+import { alloc } from 'uint8arrays/alloc';
+// import { equals as uint8ArrayEquals } from 'uint8arrays/equals'
+import { bufferIncludes, bufferIndexOf, bufferToString, readUInt16LE, readUInt32LE, readUIntBE } from './buffer-dataview-tools.js';
 
 const minimumBytes = 4100; // A fair amount of file-types are detectable within this range.
 
-export async function fileTypeFromStream(stream) {
-	return new FileTypeParser().fromStream(stream);
-}
+// export async function fileTypeFromStream(stream) {
+// 	return new FileTypeParser().fromStream(stream);
+// }
 
 export async function fileTypeFromBuffer(input) {
 	return new FileTypeParser().fromBuffer(input);
 }
 
-export async function fileTypeFromBlob(blob) {
-	return new FileTypeParser().fromBlob(blob);
-}
+// export async function fileTypeFromBlob(blob) {
+// 	return new FileTypeParser().fromBlob(blob);
+// }
 
 function _check(buffer, headers, options) {
 	options = {
 		offset: 0,
 		...options,
 	};
+  // console.group('_check')
+  // console.log('options: ', options)
+  // console.log('headers: ', headers)
 
+  let result = true
 	for (const [index, header] of headers.entries()) {
+    // console.log('index: ', index)
+    // console.log('header: ', header)
 		// If a bitmask is set
 		if (options.mask) {
 			// If header doesn't equal `buf` with bits masked off
 			if (header !== (options.mask[index] & buffer[index + options.offset])) {
-				return false;
+				result = false;
+        break
 			}
 		} else if (header !== buffer[index + options.offset]) {
-			return false;
+			// return false;
+      result = false
+      break
 		}
 	}
+  // console.log('result: ', result)
+  // console.groupEnd()
 
-	return true;
+	return result;
 }
 
 export async function fileTypeFromTokenizer(tokenizer) {
@@ -84,57 +99,62 @@ export class FileTypeParser {
 			return;
 		}
 
-		return this.fromTokenizer(strtok3.fromBuffer(buffer));
+
+		// return this.fromTokenizer(strtok3.fromBuffer(buffer));
+		return this.fromTokenizer(new BufferTokenizer(buffer));
 	}
 
 	async fromBlob(blob) {
 		const buffer = await blob.arrayBuffer();
-		return this.fromBuffer(new Uint8Array(buffer));
+
+		return this.fromTokenizer(new BufferTokenizer(new Uint8Array(buffer)));
 	}
 
-	async fromStream(stream) {
-		const tokenizer = await strtok3.fromStream(stream);
-		try {
-			return await this.fromTokenizer(tokenizer);
-		} finally {
-			await tokenizer.close();
-		}
-	}
+	// async fromStream(stream) {
+	// 	const tokenizer = await strtok3.fromStream(stream);
+	// 	try {
+	// 		return await this.fromTokenizer(tokenizer);
+	// 	} finally {
+	// 		await tokenizer.close();
+	// 	}
+	// }
 
-	async toDetectionStream(readableStream, options = {}) {
-		const {default: stream} = await import('node:stream');
-		const {sampleSize = minimumBytes} = options;
+	// async toDetectionStream(readableStream, options = {}) {
+	// 	const {default: stream} = await import('node:stream');
+	// 	const {sampleSize = minimumBytes} = options;
 
-		return new Promise((resolve, reject) => {
-			readableStream.on('error', reject);
+	// 	return new Promise((resolve, reject) => {
+	// 		readableStream.on('error', reject);
 
-			readableStream.once('readable', () => {
-				(async () => {
-					try {
-						// Set up output stream
-						const pass = new stream.PassThrough();
-						const outputStream = stream.pipeline ? stream.pipeline(readableStream, pass, () => {}) : readableStream.pipe(pass);
+	// 		readableStream.once('readable', () => {
+	// 			(async () => {
+	// 				try {
+	// 					// Set up output stream
+	// 					const pass = new stream.PassThrough();
+	// 					const outputStream = stream.pipeline ? stream.pipeline(readableStream, pass, () => {}) : readableStream.pipe(pass);
 
-						// Read the input stream and detect the filetype
-						const chunk = readableStream.read(sampleSize) ?? readableStream.read() ?? Buffer.alloc(0);
-						try {
-							pass.fileType = await this.fromBuffer(chunk);
-						} catch (error) {
-							if (error instanceof strtok3.EndOfStreamError) {
-								pass.fileType = undefined;
-							} else {
-								reject(error);
-							}
-						}
+	// 					// Read the input stream and detect the filetype
+	// 					const chunk = readableStream.read(sampleSize) ?? readableStream.read() ?? alloc(0);
+	// 					try {
+  //             // @ts-expect-error - needs fixing
+	// 						pass.fileType = await this.fromBuffer(chunk);
+	// 					} catch (error) {
+	// 						if (error instanceof strtok3.EndOfStreamError) {
+  //               // @ts-expect-error - needs fixing
+	// 							pass.fileType = undefined;
+	// 						} else {
+	// 							reject(error);
+	// 						}
+	// 					}
 
-						resolve(outputStream);
-					} catch (error) {
-						reject(error);
-					}
-				})();
-			});
-		});
-	}
+	// 					resolve(outputStream);
+	// 				} catch (error) {
+	// 					reject(error);
+	// 				}
+	// 			})();
+	// 		});
+	// 	});
+	// }
 
 	check(header, options) {
 		return _check(this.buffer, header, options);
@@ -145,7 +165,7 @@ export class FileTypeParser {
 	}
 
 	async parse(tokenizer) {
-		this.buffer = Buffer.alloc(minimumBytes);
+		this.buffer = alloc(minimumBytes);
 
 		// Keep reading until EOF if the file size is unknown.
 		if (tokenizer.fileInfo.size === undefined) {
@@ -374,10 +394,10 @@ export class FileTypeParser {
 
 					// https://en.wikipedia.org/wiki/Zip_(file_format)#File_headers
 					const zipHeader = {
-						compressedSize: this.buffer.readUInt32LE(18),
-						uncompressedSize: this.buffer.readUInt32LE(22),
-						filenameLength: this.buffer.readUInt16LE(26),
-						extraFieldLength: this.buffer.readUInt16LE(28),
+						compressedSize: readUInt32LE(this.buffer, 18),
+						uncompressedSize: readUInt32LE(this.buffer, 22),
+						filenameLength: readUInt16LE(this.buffer, 26),
+						extraFieldLength: readUInt16LE(this.buffer, 28),
 					};
 
 					zipHeader.filename = await tokenizer.readToken(new Token.StringType(zipHeader.filenameLength, 'utf-8'));
@@ -472,7 +492,7 @@ export class FileTypeParser {
 						while (nextHeaderIndex < 0 && (tokenizer.position < tokenizer.fileInfo.size)) {
 							await tokenizer.peekBuffer(this.buffer, {mayBeLess: true});
 
-							nextHeaderIndex = this.buffer.indexOf('504B0304', 0, 'hex');
+							nextHeaderIndex = bufferIndexOf(this.buffer, '504B0304', 0, 'hex');
 							// Move position to the next header if found, skip the whole buffer otherwise
 							await tokenizer.ignore(nextHeaderIndex >= 0 ? nextHeaderIndex : this.buffer.length);
 						}
@@ -481,7 +501,7 @@ export class FileTypeParser {
 					}
 				}
 			} catch (error) {
-				if (!(error instanceof strtok3.EndOfStreamError)) {
+				if (!(error instanceof EndOfStreamError)) {
 					throw error;
 				}
 			}
@@ -495,7 +515,7 @@ export class FileTypeParser {
 		if (this.checkString('OggS')) {
 			// This is an OGG container
 			await tokenizer.ignore(28);
-			const type = Buffer.alloc(8);
+			const type = alloc(8);
 			await tokenizer.readBuffer(type);
 
 			// Needs to be before `ogg` check
@@ -576,7 +596,7 @@ export class FileTypeParser {
 		) {
 			// They all can have MIME `video/mp4` except `application/mp4` special-case which is hard to detect.
 			// For some cases, we're specific, everything else falls to `video/mp4` with `mp4` extension.
-			const brandMajor = this.buffer.toString('binary', 8, 12).replace('\0', ' ').trim();
+			const brandMajor = bufferToString(this.buffer, 'binary', 8, 12).replace('\0', ' ').trim();
 			switch (brandMajor) {
 				case 'avif':
 				case 'avis':
@@ -706,11 +726,13 @@ export class FileTypeParser {
 			try {
 				await tokenizer.ignore(1350);
 				const maxBufferSize = 10 * 1024 * 1024;
-				const buffer = Buffer.alloc(Math.min(maxBufferSize, tokenizer.fileInfo.size));
+				const buffer = alloc(Math.min(maxBufferSize, tokenizer.fileInfo.size));
 				await tokenizer.readBuffer(buffer, {mayBeLess: true});
 
 				// Check if this is an Adobe Illustrator file
-				if (buffer.includes(Buffer.from('AIPrivateData'))) {
+        const textEncoder = new TextEncoder();
+        const pattern = textEncoder.encode('AIPrivateData');
+        if (bufferIncludes(buffer, pattern, 0)) {
 					return {
 						ext: 'ai',
 						mime: 'application/postscript',
@@ -718,7 +740,7 @@ export class FileTypeParser {
 				}
 			} catch (error) {
 				// Swallow end of stream error if file is too small for the Adobe AI check
-				if (!(error instanceof strtok3.EndOfStreamError)) {
+				if (!(error instanceof EndOfStreamError)) {
 					throw error;
 				}
 			}
@@ -773,7 +795,7 @@ export class FileTypeParser {
 					mask >>= 1;
 				}
 
-				const id = Buffer.alloc(ic + 1);
+				const id = alloc(ic + 1);
 				await tokenizer.readBuffer(id);
 				return id;
 			}
@@ -784,8 +806,8 @@ export class FileTypeParser {
 				lengthField[0] ^= 0x80 >> (lengthField.length - 1);
 				const nrLength = Math.min(6, lengthField.length); // JavaScript can max read 6 bytes integer
 				return {
-					id: id.readUIntBE(0, id.length),
-					len: lengthField.readUIntBE(lengthField.length - nrLength, nrLength),
+					id: readUIntBE(id, 0, id.length),
+					len: readUIntBE(lengthField, lengthField.length - nrLength, nrLength),
 				};
 			}
 
@@ -1059,7 +1081,8 @@ export class FileTypeParser {
 		}
 
 		if (this.checkString('AC')) {
-			const version = this.buffer.toString('binary', 2, 6);
+			const version = bufferToString(this.buffer, 'binary', 2, 6);
+      // @ts-expect-error - TODO: fix
 			if (version.match('^d*') && version >= 1000 && version <= 1050) {
 				return {
 					ext: 'dwg',
@@ -1432,10 +1455,10 @@ export class FileTypeParser {
 		}
 
 		if (this.check([0x04, 0x00, 0x00, 0x00]) && this.buffer.length >= 16) { // Rough & quick check Pickle/ASAR
-			const jsonSize = this.buffer.readUInt32LE(12);
+			const jsonSize = readUInt32LE(this.buffer, 12);
 			if (jsonSize > 12 && this.buffer.length >= jsonSize + 16) {
 				try {
-					const header = this.buffer.slice(16, jsonSize + 16).toString();
+          const header = bufferToString(this.buffer, 'utf-8', 16, jsonSize + 16);
 					const json = JSON.parse(header);
 					// Check if Pickle is ASAR
 					if (json.files) { // Final check, assuring Pickle/ASAR format
@@ -1644,7 +1667,9 @@ export class FileTypeParser {
 	}
 
 	async readTiffHeader(bigEndian) {
+    // @ts-expect-error - TODO: fix
 		const version = (bigEndian ? Token.UINT16_BE : Token.UINT16_LE).get(this.buffer, 2);
+    // @ts-expect-error - TODO: fix
 		const ifdOffset = (bigEndian ? Token.UINT32_BE : Token.UINT32_LE).get(this.buffer, 4);
 
 		if (version === 42) {
@@ -1682,9 +1707,9 @@ export class FileTypeParser {
 	}
 }
 
-export async function fileTypeStream(readableStream, options = {}) {
-	return new FileTypeParser().toDetectionStream(readableStream, options);
-}
+// export async function fileTypeStream(readableStream, options = {}) {
+// 	return new FileTypeParser().toDetectionStream(readableStream, options);
+// }
 
 export const supportedExtensions = new Set(extensions);
 export const supportedMimeTypes = new Set(mimeTypes);
