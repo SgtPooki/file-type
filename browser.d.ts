@@ -1,4 +1,4 @@
-import type {FileTypeResult} from './core.js';
+import type { FileTypeResult } from './core.js'
 
 /**
 Detect the file type of a [`ReadableStream`](https://developer.mozilla.org/en-US/docs/Web/API/ReadableStream).
@@ -15,15 +15,15 @@ const fileType = await fileTypeFromStream(response.body);
 console.log(fileType);
 //=> {ext: 'jpg', mime: 'image/jpeg'}
 ```
-*/
-export declare function fileTypeFromStream(stream: ReadableStream): Promise<FileTypeResult | undefined>;
+ */
+export declare function fileTypeFromStream (stream: ReadableStream): Promise<FileTypeResult | undefined>
 
 export {
-	fileTypeFromBuffer,
-	fileTypeFromBlob,
-	supportedExtensions,
-	supportedMimeTypes,
-	type FileTypeResult,
-	type FileExtension,
-	type MimeType,
-} from './core.js';
+  fileTypeFromBuffer,
+  fileTypeFromBlob,
+  supportedExtensions,
+  supportedMimeTypes,
+  type FileTypeResult,
+  type FileExtension,
+  type MimeType
+} from './core.js'

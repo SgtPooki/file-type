@@ -1,11 +1,9 @@
-
 /**
  * Buffer.readUInt32LE, but via a DataView
  */
 export function readUInt32LE (buffer: Uint8Array, offset: number): number {
   return new DataView(buffer.buffer).getUint32(offset, true)
 }
-
 
 /**
  * Buffer.readUInt16LE, but via a DataView
@@ -49,7 +47,7 @@ export function stringToBuffer (str: string, encoding?: string): Uint8Array {
 /**
  * Buffer.indexOf, but via a DataView
  */
-export function bufferIndexOf(haystack: Uint8Array, needle: string | Uint8Array | number, offset: number, encoding?: string): number {
+export function bufferIndexOf (haystack: Uint8Array, needle: string | Uint8Array | number, offset: number, encoding?: string): number {
   if (typeof needle === 'string') {
     needle = stringToBuffer(needle, encoding)
 
@@ -76,7 +74,6 @@ export function bufferIndexOf(haystack: Uint8Array, needle: string | Uint8Array 
   return -1
 }
 
-
-export function bufferIncludes(haystack: Uint8Array, needle: string | Uint8Array | number, offset: number, encoding?: string): boolean {
+export function bufferIncludes (haystack: Uint8Array, needle: string | Uint8Array | number, offset: number, encoding?: string): boolean {
   return bufferIndexOf(haystack, needle, offset, encoding) !== -1
 }

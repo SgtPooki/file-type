@@ -18,38 +18,33 @@ export class Token {
  * A replacement for the strtok3 library that uses a DataView for tokenization
  */
 export class DataViewTokenizer {
-  private buffer: ArrayBuffer
-  private view: DataView
+  private readonly buffer: ArrayBuffer
+  // @ts-expect-error - unused for now
+  private readonly view: DataView
   private position: number
-  private end: number
-  constructor(buffer: ArrayBuffer) {
+  private readonly end: number
+  constructor (buffer: ArrayBuffer) {
     this.buffer = buffer
     this.position = 0
     this.end = buffer.byteLength
     this.view = new DataView(buffer)
-    console.log(this.buffer, this.view, this.position, this.end)
   }
 
-  static fromBuffer(buffer: ArrayBuffer): DataViewTokenizer {
-    console.log('typeof buffer: ', typeof buffer)
-    console.log('buffer: ', buffer)
-    if (buffer instanceof ArrayBuffer) {
-      console.log('buffer is an ArrayBuffer')
-    }
+  static fromBuffer (buffer: ArrayBuffer): DataViewTokenizer {
     if (buffer instanceof Uint8Array) {
-      console.log('buffer is a Uint8Array')
       buffer = buffer.buffer
     }
     return new DataViewTokenizer(buffer)
   }
 
-  get fileInfo() {
+  get fileInfo () {
     return {
       size: this.end - this.position,
       position: this.position
     }
   }
-  peekBuffer(bufferToWriteTo: Uint8Array, options?: ReadChunkOptions): void {
+
+  peekBuffer (bufferToWriteTo: Uint8Array, options?: ReadChunkOptions): void {
     const position = options?.position ?? this.position
     const length = options?.length ?? this.end - position
     const mayBeLess = options?.mayBeLess ?? false
@@ -63,23 +58,21 @@ export class DataViewTokenizer {
     bufferToWriteTo.set(new Uint8Array(this.buffer, position, length), offset)
   }
 
-  readBuffer(bufferToWriteTo: Uint8Array, options?: ReadChunkOptions): number {
+  readBuffer (bufferToWriteTo: Uint8Array, options?: ReadChunkOptions): number {
     this.peekBuffer(bufferToWriteTo, options)
     this.position += options?.length ?? this.end - this.position
     return options?.length ?? this.end - this.position
   }
 
-  ignore(length: number): void {
+  ignore (length: number): void {
     this.position += length
   }
 
   readToken<T>(token: IGetToken<T>, position: number = this.position): T {
-    const uint8Array = new Uint8Array(this.buffer, position, token.len);
-    const len = this.readBuffer(uint8Array, {position});
-    if (len < token.len)
-      throw new Error('Foobar');
+    const uint8Array = new Uint8Array(this.buffer, position, token.len)
+    const len = this.readBuffer(uint8Array, { position })
+    if (len < token.len) { throw new Error('Foobar') }
 
-    console.log('token.get(uint8Array, 0)', token.get(uint8Array, 0))
-    return token.get(uint8Array, 0);
+    return token.get(uint8Array, 0)
   }
 }

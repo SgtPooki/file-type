@@ -5,5 +5,15 @@ export default {
       platform: 'browser',
       bundle: true
     }
+  },
+  dependencyCheck: {
+    ignore: [
+      // npm scripts
+      'xo',
+    ],
+    productionIgnorePatterns: [
+      'test.js',
+      '**/*.test-d.ts'
+    ]
   }
 }

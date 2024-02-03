@@ -1,4 +1,3 @@
 // import * as strtok3 from 'strtok3';
 
-
-export * from './core.js';
+export * from './core.js'

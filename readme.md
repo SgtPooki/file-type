@@ -181,8 +181,8 @@ Or `undefined` when there is no match.
 import {fileTypeFromBlob} from 'file-type';
 
 const blob = new Blob(['<?xml version="1.0" encoding="ISO-8859-1" ?>'], {
-	type: 'text/plain',
-	endings: 'native'
+  type: 'text/plain',
+  endings: 'native'
 });
 
 console.log(await fileTypeFromBlob(blob));
@@ -235,8 +235,8 @@ const s3 = new S3();
 
 // Initialize the S3 tokenizer.
 const s3Tokenizer = await makeTokenizer(s3, {
-	Bucket: 'affectlab',
-	Key: '1min_35sec.mp4'
+  Bucket: 'affectlab',
+  Key: '1min_35sec.mp4'
 });
 
 // Figure out what kind of file it is.
@@ -291,7 +291,7 @@ const stream1 = got.stream(url);
 const stream2 = await fileTypeStream(stream1, {sampleSize: 1024});
 
 if (stream2.fileType?.mime === 'image/jpeg') {
-	// stream2 can be used to stream the JPEG image (from the very beginning of the stream)
+  // stream2 can be used to stream the JPEG image (from the very beginning of the stream)
 }
 ```
 
@@ -323,8 +323,8 @@ If the detector returns `undefined`, there are 2 possible scenarios:
 
 1. The detector has not read from the tokenizer, it will be proceeded with the next available detector.
 2. The detector has read from the tokenizer (`tokenizer.position` has been increased).
-	In that case no further detectors will be executed and the final conclusion is that file-type returns undefined.
-	Note that this an exceptional scenario, as the detector takes the opportunity from any other detector to determine the file type.
+  In that case no further detectors will be executed and the final conclusion is that file-type returns undefined.
+  Note that this an exceptional scenario, as the detector takes the opportunity from any other detector to determine the file type.
 
 Example detector array which can be extended and provided to each public method via the `fileTypeOptions` argument:
 
@@ -332,18 +332,18 @@ Example detector array which can be extended and provided to each public method 
 import {FileTypeParser} from 'file-type';
 
 const customDetectors = [
-	async tokenizer => {
-		const unicornHeader = [85, 78, 73, 67, 79, 82, 78]; // 'UNICORN' as decimal string
+  async tokenizer => {
+    const unicornHeader = [85, 78, 73, 67, 79, 82, 78]; // 'UNICORN' as decimal string
 
-		const buffer = Buffer.alloc(7);
-		await tokenizer.peekBuffer(buffer, {length: unicornHeader.length, mayBeLess: true});
+    const buffer = Buffer.alloc(7);
+    await tokenizer.peekBuffer(buffer, {length: unicornHeader.length, mayBeLess: true});
 
-		if (unicornHeader.every((value, index) => value === buffer[index])) {
-			return {ext: 'unicorn', mime: 'application/unicorn'};
-		}
+    if (unicornHeader.every((value, index) => value === buffer[index])) {
+      return {ext: 'unicorn', mime: 'application/unicorn'};
+    }
 
-		return undefined;
-	},
+    return undefined;
+  },
 ];
 
 const buffer = Buffer.from('UNICORN');
@@ -511,10 +511,10 @@ console.log(fileType);
 
 The following file types will not be accepted:
 - [MS-CFB: Microsoft Compound File Binary File Format based formats](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-cfb/53989ce4-7b05-4f8d-829b-d08d6148375b), too old and difficult to parse:
-	- `.doc` - Microsoft Word 97-2003 Document
-	- `.xls` - Microsoft Excel 97-2003 Document
-	- `.ppt` - Microsoft PowerPoint97-2003 Document
-	- `.msi` - Microsoft Windows Installer
+  - `.doc` - Microsoft Word 97-2003 Document
+  - `.xls` - Microsoft Excel 97-2003 Document
+  - `.ppt` - Microsoft PowerPoint97-2003 Document
+  - `.msi` - Microsoft Windows Installer
 - `.csv` - [Reason.](https://github.com/sindresorhus/file-type/issues/264#issuecomment-568439196)
 - `.svg` - Detecting it requires a full-blown parser. Check out [`is-svg`](https://github.com/sindresorhus/is-svg) for something that mostly works.
 
