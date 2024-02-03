@@ -9,6 +9,9 @@
     "name": "SgtPooki",
     "email": "1173416+SgtPooki@users.noreply.github.com"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "types": "./dist/src/index.d.ts",
   "typesVersions": {
