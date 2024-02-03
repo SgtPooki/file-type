@@ -25,4 +25,8 @@ jobs:
       - run: npm install
       - run: npm test
       - run: npm run build
-      - run: npm run release
+      - name: Run release
+        run: npm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
