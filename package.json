@@ -40,22 +40,17 @@
     ".": {
       "node": "./dist/src/index.js",
       "types": "./dist/src/index.d.ts",
-      "default": "./dist/src/browser.js",
-      "import": "./dist/src/browser.js"
+      "default": "./dist/src/index.js"
     },
     "./core": {
       "node": "./dist/src/core.js",
-      "types": "./dist/src/core.d.ts"
+      "types": "./dist/src/core.d.ts",
+      "default": "./dist/src/core.js"
     },
     "./browser": {
-      "default": "./dist/src/browser.js",
-      "import": "./dist/src/browser.js"
-    },
-    "./*": {
-      "node": "./dist/src/*.js",
-      "types": "./dist/src/*.d.ts",
-      "default": "./dist/src/*.js",
-      "import": "./dist/src/*.js"
+      "node": "./dist/src/browser.js",
+      "types": "./dist/src/browser.d.ts",
+      "default": "./dist/src/browser.js"
     }
   },
   "sideEffects": false,
