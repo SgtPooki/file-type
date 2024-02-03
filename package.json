@@ -67,6 +67,7 @@
     "dep-check": "aegir dep-check",
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
+    "release": "aegir release",
     "test": "npm run build && ava --fail-fast",
     "test:tsd": "tsd"
   },
