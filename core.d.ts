@@ -1,5 +1,4 @@
-import type { Readable as ReadableStream } from 'node:stream'
-import type { ITokenizer } from 'strtok3'
+import type { ITokenizer } from './src/abstract-tokenizer.js'
 
 export type FileExtension =
   | 'jpg'
