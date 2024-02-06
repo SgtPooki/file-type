@@ -1,6 +1,6 @@
 {
   "name": "@sgtpooki/file-type",
-  "version": "1.0.0-1e871f8",
+  "version": "1.0.1",
   "description": "An *Ackchyually* browser compatible file-type hacky replacement of the `file-type` package. Forked from https://github.com/sindresorhus/file-type",
   "license": "MIT",
   "repository": "sgtpooki/file-type",
