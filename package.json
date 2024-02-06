@@ -63,6 +63,7 @@
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "release": "aegir release",
+    "release:rc": "aegir release-rc",
     "test": "aegir test",
     "test:chrome": "aegir test -t browser --cov",
     "test:chrome-webworker": "aegir test -t webworker",
