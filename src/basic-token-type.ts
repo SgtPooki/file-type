@@ -1,5 +1,6 @@
 import * as ieee754 from 'ieee754'
 import type { IToken, IGetToken } from '@tokenizer/token'
+import { bufferToString } from './buffer-dataview-tools.js'
 // import { Buffer } from 'node:buffer';
 
 // Primitive types
@@ -431,8 +432,8 @@ export class BufferType implements IGetToken<Uint8Array, Buffer> {
   public constructor (public len: number) {
   }
 
-  public get (uint8Array: Uint8Array, off: number): Buffer {
-    return Buffer.from(uint8Array.subarray(off, off + this.len))
+  public get (uint8Array: Uint8Array, off: number): Uint8Array {
+    return uint8Array.subarray(off, off + this.len)
   }
 }
 
@@ -444,7 +445,7 @@ export class StringType implements IGetToken<string, Buffer> {
   }
 
   public get (uint8Array: Uint8Array, offset: number): string {
-    return Buffer.from(uint8Array).toString(this.encoding, offset, offset + this.len)
+    return bufferToString(uint8Array, this.encoding, offset, offset + this.len)
   }
 }
 

@@ -30,14 +30,9 @@ function _check (buffer, headers, options) {
     offset: 0,
     ...options
   }
-  // console.group('_check')
-  // console.log('options: ', options)
-  // console.log('headers: ', headers)
 
   let result = true
   for (const [index, header] of headers.entries()) {
-    // console.log('index: ', index)
-    // console.log('header: ', header)
     // If a bitmask is set
     if (options.mask) {
       // If header doesn't equal `buf` with bits masked off
@@ -51,8 +46,6 @@ function _check (buffer, headers, options) {
       break
     }
   }
-  // console.log('result: ', result)
-  // console.groupEnd()
 
   return result
 }
@@ -1234,7 +1227,7 @@ export class FileTypeParser {
     // ASF_Header_Object first 80 bytes
     if (this.check([0x30, 0x26, 0xB2, 0x75, 0x8E, 0x66, 0xCF, 0x11, 0xA6, 0xD9])) {
       async function readHeader () {
-        const guid = Buffer.alloc(16)
+        const guid = alloc(16)
         await tokenizer.readBuffer(guid)
         return {
           id: guid,
@@ -1249,7 +1242,7 @@ export class FileTypeParser {
         let payload = header.size - 24
         if (_check(header.id, [0x91, 0x07, 0xDC, 0xB7, 0xB7, 0xA9, 0xCF, 0x11, 0x8E, 0xE6, 0x00, 0xC0, 0x0C, 0x20, 0x53, 0x65])) {
           // Sync on Stream-Properties-Object (B7DC0791-A9B7-11CF-8EE6-00C00C205365)
-          const typeId = Buffer.alloc(16)
+          const typeId = alloc(16)
           payload -= await tokenizer.readBuffer(typeId)
 
           if (_check(typeId, [0x40, 0x9E, 0x69, 0xF8, 0x4D, 0x5B, 0xCF, 0x11, 0xA8, 0xFD, 0x00, 0x80, 0x5F, 0x5C, 0x44, 0x2B])) {

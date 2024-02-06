@@ -63,7 +63,13 @@
     "lint": "aegir lint",
     "lint:fix": "aegir lint --fix",
     "release": "aegir release",
-    "test": "npm run build && ava --fail-fast",
+    "test": "aegir test",
+    "test:chrome": "aegir test -t browser --cov",
+    "test:chrome-webworker": "aegir test -t webworker",
+    "test:firefox": "aegir test -t browser -- --browser firefox",
+    "test:firefox-webworker": "aegir test -t webworker -- --browser firefox",
+    "test:node": "aegir test -t node --cov",
+    "test:electron-main": "aegir test -t electron-main",
     "test:tsd": "tsd"
   },
   "eslintConfig": {
