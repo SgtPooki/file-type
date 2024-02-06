@@ -1,3 +1,8 @@
 node_modules
 yarn.lock
 dist
+.coverage
+.env
+.envrc
+.tool-versions
+.vscode
