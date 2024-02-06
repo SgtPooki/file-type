@@ -194,7 +194,6 @@ jobs:
       - if: ${{ steps.release.outputs.releases_created == 'true' }}
         name: Run release version
         run: |
-          git update-index --assume-unchanged packages/helia/src/version.ts
           npm run --if-present release
         env:
           GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
@@ -202,7 +201,6 @@ jobs:
       - if: ${{ steps.release.outputs.releases_created != 'true' }}
         name: Run release rc
         run: |
-            git update-index --assume-unchanged packages/helia/src/version.ts
             npm run --if-present release:rc
         env:
           GITHUB_TOKEN: ${{ secrets.UCI_GITHUB_TOKEN || github.token }}
