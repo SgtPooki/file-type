@@ -1,5 +1,5 @@
 import { Buffer } from 'node:buffer'
-import { createReadStream } from 'node:fs'
+// import { createReadStream } from 'node:fs'
 import { expectType } from 'tsd'
 import {
   type FileTypeResult as FileTypeResultBrowser
@@ -8,12 +8,12 @@ import {
   fileTypeFromBlob,
   fileTypeFromBuffer,
   fileTypeFromFile,
-  fileTypeFromStream,
-  fileTypeStream,
+  // fileTypeFromStream,
+  // fileTypeStream,
   supportedExtensions,
   supportedMimeTypes,
   type FileTypeResult,
-  type ReadableStreamWithFileType,
+  // type ReadableStreamWithFileType,
   type FileExtension,
   type MimeType
 } from '../index.js'
@@ -40,29 +40,29 @@ expectType<Promise<FileTypeResult | undefined>>(fileTypeFromBuffer(new ArrayBuff
   }
 })();
 
-(async () => {
-  const stream = createReadStream('myFile')
+// (async () => {
+//   const stream = createReadStream('myFile')
 
-  expectType<FileTypeResult | undefined>(await fileTypeFromStream(stream))
+//   expectType<FileTypeResult | undefined>(await fileTypeFromStream(stream))
 
-  const result = await fileTypeFromStream(stream)
-  if (result !== undefined) {
-    expectType<FileExtension>(result.ext)
-    expectType<MimeType>(result.mime)
-  }
-})()
+//   const result = await fileTypeFromStream(stream)
+//   if (result !== undefined) {
+//     expectType<FileExtension>(result.ext)
+//     expectType<MimeType>(result.mime)
+//   }
+// })()
 
 expectType<ReadonlySet<FileExtension>>(supportedExtensions)
 
-expectType<ReadonlySet<MimeType>>(supportedMimeTypes)
+expectType<ReadonlySet<MimeType>>(supportedMimeTypes);
 
-const readableStream = createReadStream('file.png')
-const streamWithFileType = fileTypeStream(readableStream)
-expectType<Promise<ReadableStreamWithFileType>>(streamWithFileType);
-(async () => {
-  const { fileType } = await streamWithFileType
-  expectType<FileTypeResult | undefined>(fileType)
-})()
+// const readableStream = createReadStream('file.png')
+// const streamWithFileType = fileTypeStream(readableStream)
+// expectType<Promise<ReadableStreamWithFileType>>(streamWithFileType);
+// (async () => {
+//   const { fileType } = await streamWithFileType
+//   expectType<FileTypeResult | undefined>(fileType)
+// })()
 
 // Browser
 expectType<Promise<FileTypeResultBrowser | undefined>>(fileTypeFromBlob(new Blob()))

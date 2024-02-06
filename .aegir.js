@@ -13,7 +13,8 @@ export default {
     ],
     productionIgnorePatterns: [
       'test.js',
-      '**/*.test-d.ts'
+      '**/*.test-d.ts',
+      '**/*.spec.[tj]s',
     ]
   }
 }

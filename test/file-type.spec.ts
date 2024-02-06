@@ -1,10 +1,12 @@
+/* eslint-env mocha */
+
 // import process from 'node:process';
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import path from 'node:path'
-import stream from 'node:stream'
+// import stream from 'node:stream'
 import { fileURLToPath } from 'node:url'
-import test from 'ava'
+// import test from 'ava'
 import { Parser as ReadmeParser } from 'commonmark'
 // import { readableNoopStream } from 'noop-stream'
 import {
@@ -16,9 +18,12 @@ import {
   // fileTypeStream,
   supportedExtensions,
   supportedMimeTypes
-} from './dist/src/index.js'
+} from '../src/index.js'
+import { expect } from 'aegir/chai'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const fixturePath = path.join(__dirname, '..', '..', 'fixture')
 
 const missingTests = new Set([
   'mpc'
@@ -266,10 +271,10 @@ const failingFixture = new Set([
   'fixture-password-protected'
 ])
 
-async function checkBufferLike (t, type, bufferLike) {
+async function checkBufferLike (type, bufferLike) {
   const { ext, mime } = await fileTypeFromBuffer(bufferLike) ?? {}
-  t.is(ext, type)
-  t.is(typeof mime, 'string')
+  expect(ext).to.equal(type)
+  expect(typeof mime).to.equal('string')
 }
 
 // async function checkBlobLike(t, type, bufferLike) {
@@ -286,43 +291,47 @@ async function checkBufferLike (t, type, bufferLike) {
 // }
 
 // async function testFromFile(t, ext, name) {
-//   const file = path.join(__dirname, 'fixture', `${(name ?? 'fixture')}.${ext}`);
+//   const file = path.join(fixturePath, `${(name ?? 'fixture')}.${ext}`);
 //   return checkFile(t, ext, file);
 // }
 
-async function testFromBuffer (t, ext, name) {
+async function testFromBuffer (ext: string, name?: string) {
   const fixtureName = `${(name ?? 'fixture')}.${ext}`
 
-  const file = path.join(__dirname, 'fixture', fixtureName)
+  const file = path.join(fixturePath, fixtureName)
   const chunk = fs.readFileSync(file)
-  await checkBufferLike(t, ext, chunk)
-  await checkBufferLike(t, ext, new Uint8Array(chunk))
-  await checkBufferLike(t, ext, chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength))
+  await checkBufferLike(ext, chunk)
+  await checkBufferLike(ext, new Uint8Array(chunk))
+  await checkBufferLike(ext, chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength))
 }
 
 // async function testFromBlob (t, ext, name) {
 //   const fixtureName = `${(name ?? 'fixture')}.${ext}`
 
-//   const file = path.join(__dirname, 'fixture', fixtureName)
+//   const file = path.join(fixturePath, fixtureName)
 //   const chunk = fs.readFileSync(file)
 //   await checkBlobLike(t, ext, chunk)
 // }
 
-async function testFalsePositive (t, ext, name) {
-  const file = path.join(__dirname, 'fixture', `${name}.${ext}`)
+async function testFalsePositive (ext, name) {
+  const file = path.join(fixturePath, `${name}.${ext}`)
   const fileContent = fs.readFileSync(file)
 
-  await t.is(await fileTypeFromBuffer(fileContent), undefined)
+  // await t.is(await fileTypeFromBuffer(fileContent), undefined)
+  await expect(fileTypeFromBuffer(fileContent)).to.eventually.be(undefined)
 
   const chunk = fs.readFileSync(file)
-  t.is(await fileTypeFromBuffer(chunk), undefined)
-  t.is(await fileTypeFromBuffer(new Uint8Array(chunk)), undefined)
-  t.is(await fileTypeFromBuffer(chunk.buffer), undefined)
+  // t.is(await fileTypeFromBuffer(chunk), undefined)
+  // t.is(await fileTypeFromBuffer(new Uint8Array(chunk)), undefined)
+  // t.is(await fileTypeFromBuffer(chunk.buffer), undefined)
+  await expect(fileTypeFromBuffer(chunk)).to.eventually.be(undefined)
+  await expect(fileTypeFromBuffer(new Uint8Array(chunk))).to.eventually.be(undefined)
+  await expect(fileTypeFromBuffer(chunk.buffer)).to.eventually.be(undefined)
 }
 
 // async function testFileFromStream (t, ext, name) {
 //   const filename = `${(name ?? 'fixture')}.${ext}`
-//   const file = path.join(__dirname, 'fixture', filename)
+//   const file = path.join(fixturePath, filename)
 //   const fileType = await fileTypeFromStream(fs.createReadStream(file))
 
 //   t.truthy(fileType, `identify ${filename}`)
@@ -341,7 +350,7 @@ async function testFalsePositive (t, ext, name) {
 
 // async function testStream(t, ext, name) {
 //   const fixtureName = `${(name ?? 'fixture')}.${ext}`;
-//   const file = path.join(__dirname, 'fixture', fixtureName);
+//   const file = path.join(fixturePath, fixtureName);
 
 //   const readableStream = await fileTypeStream(fs.createReadStream(file));
 //   const fileStream = fs.createReadStream(file);
@@ -356,37 +365,50 @@ for (const type of types) {
   if (Object.prototype.hasOwnProperty.call(names, type)) {
     for (const name of names[type]) {
       const fixtureName = `${name}.${type}`
-      const _test = failingFixture.has(fixtureName) ? test.failing : test
-
+      // const _test = failingFixture.has(fixtureName) ? test.failing : test
+      const _test = failingFixture.has(fixtureName) ? it.skip : it
       // _test(`${name}.${type} ${i++} .fileTypeFromFile() method - same fileType`, testFromFile, type, name);
-      _test(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, testFromBuffer, type, name)
+      // _test(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, testFromBuffer, type, name)
+      // describe(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, async () => {
+        _test(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, async () => {
+          await testFromBuffer(type, name)
+        })
+      // })
       // _test(`${name}.${type} ${i++} .fileTypeFromBlob() method - same fileType`, testFromBlob, type, name);
       // _test(`${name}.${type} ${i++} .fileTypeFromStream() method - same fileType`, testFileFromStream, type, name);
-      // test(`${name}.${type} ${i++} .fileTypeStream() - identical streams`, testStream, type, name);
+      // it(`${name}.${type} ${i++} .fileTypeStream() - identical streams`, testStream, type, name);
     }
   } else {
     const fixtureName = `fixture.${type}`
-    const _test = failingFixture.has(fixtureName) ? test.failing : test
+    // const _test = failingFixture.has(fixtureName) ? test.failing : test
+    const _test = failingFixture.has(fixtureName) ? it.skip : it
 
     // _test(`${type} ${i++} .fileTypeFromFile()`, testFromFile, type);
-    _test(`${type} ${i++} .fileTypeFromBuffer()`, testFromBuffer, type)
+    // _test(`${type} ${i++} .fileTypeFromBuffer()`, testFromBuffer, type)
+    // describe(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
+      _test(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
+        await testFromBuffer(type)
+      })
+    // })
     // _test(`${type} ${i++} .fileTypeFromStream()`, testFileFromStream, type);
-    // test(`${type} ${i++} .fileTypeStream() - identical streams`, testStream, type);
+    // it(`${type} ${i++} .fileTypeStream() - identical streams`, testStream, type);
   }
 
   if (Object.prototype.hasOwnProperty.call(falsePositives, type)) {
     for (const falsePositiveFile of falsePositives[type]) {
-      test(`false positive - ${type} ${i++}`, testFalsePositive, type, falsePositiveFile)
+      it(`false positive - ${type} ${i++}`, async () => {
+        await testFalsePositive(type, falsePositiveFile)
+      })
     }
   }
 }
 
-// test('.fileTypeStream() method - empty stream', async t => {
+// it('.fileTypeStream() method - empty stream', async () => {
 //   const newStream = await fileTypeStream(readableNoopStream());
 //   t.is(newStream.fileType, undefined);
 // });
 
-// test('.fileTypeStream() method - short stream', async t => {
+// it('.fileTypeStream() method - short stream', async () => {
 //   const bufferA = Buffer.from([0, 1, 0, 1]);
 //   class MyStream extends stream.Readable {
 //     _read() {
@@ -405,13 +427,13 @@ for (const type of types) {
 //   t.deepEqual(bufferA, bufferB);
 // });
 
-// test('.fileTypeStream() method - no end-of-stream errors', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.ogm');
+// it('.fileTypeStream() method - no end-of-stream errors', async () => {
+//   const file = path.join(fixturePath, 'fixture.ogm');
 //   const stream = await fileTypeStream(fs.createReadStream(file), {sampleSize: 30});
 //   t.is(stream.fileType, undefined);
 // });
 
-// test('.fileTypeStream() method - error event', async t => {
+// it('.fileTypeStream() method - error event', async () => {
 //   const errorMessage = 'Fixture';
 
 //   const readableStream = new stream.Readable({
@@ -425,8 +447,8 @@ for (const type of types) {
 //   await t.throwsAsync(fileTypeStream(readableStream), {message: errorMessage});
 // });
 
-// test('.fileTypeStream() method - sampleSize option', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.ogm');
+// it('.fileTypeStream() method - sampleSize option', async () => {
+//   const file = path.join(fixturePath, 'fixture.ogm');
 //   let stream = await fileTypeStream(fs.createReadStream(file), {sampleSize: 30});
 //   t.is(typeof (stream.fileType), 'undefined', 'file-type cannot be determined with a sampleSize of 30');
 
@@ -435,29 +457,28 @@ for (const type of types) {
 //   t.is(stream.fileType.mime, 'video/ogg');
 // });
 
-test('supportedExtensions.has', t => {
-  t.true(supportedExtensions.has('jpg'))
-  t.false(supportedExtensions.has('blah'))
+it('supportedExtensions.has', () => {
+  expect(supportedExtensions.has('jpg')).to.be.true()
+  expect(supportedExtensions.has('blah')).to.be.false()
 })
 
-test('supportedMimeTypes.has', t => {
-  t.true(supportedMimeTypes.has('video/mpeg'))
-  t.false(supportedMimeTypes.has('video/blah'))
+it('supportedMimeTypes.has', () => {
+  expect(supportedMimeTypes.has('video/mpeg')).to.be.true()
+  expect(supportedMimeTypes.has('video/blah')).to.be.false()
 })
 
-test('validate the input argument type', async t => {
-  await t.throwsAsync(fileTypeFromBuffer('x'), {
-    message: /Expected the `input` argument to be of type `Uint8Array`/
-  })
+it('validate the input argument type', async () => {
+  await expect(fileTypeFromBuffer('x')).to.eventually.be.rejectedWith(/Expected the `input` argument to be of type `Uint8Array`/)
 
-  await t.notThrowsAsync(fileTypeFromBuffer(Buffer.from('x')))
-
-  await t.notThrowsAsync(fileTypeFromBuffer(new Uint8Array()))
-
-  await t.notThrowsAsync(fileTypeFromBuffer(new ArrayBuffer()))
+  // await t.notThrowsAsync(fileTypeFromBuffer(Buffer.from('x')))
+  // await t.notThrowsAsync(fileTypeFromBuffer(new Uint8Array()))
+  // await t.notThrowsAsync(fileTypeFromBuffer(new ArrayBuffer()))
+  await expect(fileTypeFromBuffer(Buffer.from('x'))).to.eventually.not.be.rejected()
+  await expect(fileTypeFromBuffer(new Uint8Array())).to.eventually.not.be.rejected()
+  await expect(fileTypeFromBuffer(new ArrayBuffer(0))).to.eventually.not.be.rejected()
 })
 
-test('validate the repo has all extensions and mimes in sync', t => {
+it('validate the repo has all extensions and mimes in sync', () => {
   // File: core.js (base truth)
   function readIndexJS () {
     const core = fs.readFileSync('src/core.js', { encoding: 'utf8' })
@@ -476,8 +497,14 @@ test('validate the repo has all extensions and mimes in sync', t => {
   function readIndexDTS () {
     const core = fs.readFileSync('core.d.ts', { encoding: 'utf8' })
     const matches = core.match(/(?<=\|\s')(.*)(?=')/g)
-    const extArray = []
-    const mimeArray = []
+    const extArray: string[] = []
+    const mimeArray: string[] = []
+    if (matches == null) {
+      return {
+        extArray,
+        mimeArray
+      }
+    }
 
     for (const match of matches) {
       if (match.includes('/')) {
@@ -551,12 +578,12 @@ test('validate the repo has all extensions and mimes in sync', t => {
   }
 
   // Find extensions/mimes that are in `core.js` but missing from another file
-  function findMissing (array, set) {
-    const missing = []
+  function findMissing (array: string[], set) {
+    const missing: string[] = []
     const other = new Set(array)
-    for (const elemenet of set) {
-      if (!other.has(elemenet)) {
-        missing.push(elemenet)
+    for (const element of set) {
+      if (!other.has(element)) {
+        missing.push(element)
       }
     }
 
@@ -568,9 +595,12 @@ test('validate the repo has all extensions and mimes in sync', t => {
     const duplicates = findDuplicates(found)
     const extras = findExtras(found, baseTruth)
     const missing = findMissing(found, baseTruth)
-    t.is(duplicates.length, 0, `Found duplicate ${extOrMime}: ${duplicates} in ${fileName}.`)
-    t.is(extras.length, 0, `Extra ${extOrMime}: ${extras} in ${fileName}.`)
-    t.is(missing.length, 0, `Missing ${extOrMime}: ${missing} in ${fileName}.`)
+    // t.is(duplicates.length, 0, `Found duplicate ${extOrMime}: ${duplicates} in ${fileName}.`)
+    // t.is(extras.length, 0, `Extra ${extOrMime}: ${extras} in ${fileName}.`)
+    // t.is(missing.length, 0, `Missing ${extOrMime}: ${missing} in ${fileName}.`)
+    expect(duplicates).to.have.length(0, `Found duplicate ${extOrMime}: ${duplicates} in ${fileName}.`)
+    expect(extras).to.have.length(0, `Extra ${extOrMime}: ${extras} in ${fileName}.`)
+    expect(missing).to.have.length(0, `Missing ${extOrMime}: ${missing} in ${fileName}.`)
   }
 
   // Get the base truth of extensions and mimes supported from core.js
@@ -605,22 +635,23 @@ test('validate the repo has all extensions and mimes in sync', t => {
   }
 })
 
-class BufferedStream extends stream.Readable {
-  constructor (buffer) {
-    super()
-    this.push(buffer)
-    this.push(null)
-  }
+// class BufferedStream extends stream.Readable {
+//   constructor (buffer) {
+//     super()
+//     this.push(buffer)
+//     this.push(null)
+//   }
 
-  _read () {}
-}
+//   _read () {}
+// }
 
-test('odd file sizes', async t => {
+it('odd file sizes', async () => {
   const oddFileSizes = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 255, 256, 257, 511, 512, 513]
 
   for (const size of oddFileSizes) {
     const buffer = Buffer.alloc(size)
-    await t.notThrowsAsync(fileTypeFromBuffer(buffer), `fromBuffer: File size: ${size} bytes`)
+    // await t.notThrowsAsync(fileTypeFromBuffer(buffer), `fromBuffer: File size: ${size} bytes`)
+    await expect(fileTypeFromBuffer(buffer)).to.eventually.not.be.rejected(`fromBuffer: File size: ${size} bytes`)
   }
 
   // for (const size of oddFileSizes) {
@@ -630,7 +661,7 @@ test('odd file sizes', async t => {
   // }
 })
 
-test('supported files types are listed alphabetically', async t => {
+it('supported files types are listed alphabetically', async () => {
   const readme = await fs.promises.readFile('readme.md', { encoding: 'utf8' })
   let currentNode = new ReadmeParser().parse(readme).firstChild
 
@@ -651,7 +682,8 @@ test('supported files types are listed alphabetically', async t => {
     const currentFileType = currentNode.firstChild.firstChild.firstChild.literal
 
     if (previousFileType) {
-      t.true(currentFileType > previousFileType, `${currentFileType} should be listed before ${previousFileType}`)
+      // t.true(currentFileType > previousFileType, `${currentFileType} should be listed before ${previousFileType}`)
+      expect(currentFileType > previousFileType).to.be.true(`${currentFileType} should be listed before ${previousFileType}`)
     }
 
     previousFileType = currentFileType
@@ -659,10 +691,11 @@ test('supported files types are listed alphabetically', async t => {
   }
 })
 
-test('corrupt MKV throws', async t => {
-  const filePath = path.join(__dirname, 'fixture/fixture-corrupt.mkv')
+it('corrupt MKV throws', async () => {
+  const filePath = path.join(fixturePath, 'fixture-corrupt.mkv')
   const fileContent = fs.readFileSync(filePath)
-  await t.throwsAsync(fileTypeFromBuffer(fileContent), { message: /End-Of-Stream/ })
+  // await t.throwsAsync(fileTypeFromBuffer(fileContent), { message: /End-Of-Stream/ })
+  await expect(fileTypeFromBuffer(fileContent)).to.eventually.be.rejectedWith(/End-Of-Stream/)
 })
 
 // Create a custom detector for the just made up "unicorn" file type
@@ -679,12 +712,12 @@ const unicornDetector = async tokenizer => {
 
 const mockPngDetector = _tokenizer => ({ ext: 'mockPng', mime: 'image/mockPng' })
 
-const tokenizerPositionChanger = tokenizer => {
-  const buffer = Buffer.alloc(1)
-  tokenizer.readBuffer(buffer, { length: 1, mayBeLess: true })
-}
+// const tokenizerPositionChanger = tokenizer => {
+//   const buffer = Buffer.alloc(1)
+//   tokenizer.readBuffer(buffer, { length: 1, mayBeLess: true })
+// }
 
-test('fileTypeFromBlob should detect custom file type "unicorn" using custom detectors', async t => {
+it('fileTypeFromBlob should detect custom file type "unicorn" using custom detectors', async () => {
   // Set up the "unicorn" file content
   const header = 'UNICORN FILE\n'
   const blob = new Blob([header])
@@ -693,11 +726,12 @@ test('fileTypeFromBlob should detect custom file type "unicorn" using custom det
   const parser = new FileTypeParser({ customDetectors })
 
   const result = await parser.fromBlob(blob)
-  t.deepEqual(result, { ext: 'unicorn', mime: 'application/unicorn' })
+  // t.deepEqual(result, { ext: 'unicorn', mime: 'application/unicorn' })
+  expect(result).to.deep.equal({ ext: 'unicorn', mime: 'application/unicorn' })
 })
 
-test('fileTypeFromBlob should keep detecting default file types when no custom detector matches', async t => {
-  const file = path.join(__dirname, 'fixture', 'fixture.png')
+it('fileTypeFromBlob should keep detecting default file types when no custom detector matches', async () => {
+  const file = path.join(fixturePath, 'fixture.png')
   const chunk = fs.readFileSync(file)
   const blob = new Blob([chunk])
 
@@ -705,11 +739,12 @@ test('fileTypeFromBlob should keep detecting default file types when no custom d
   const parser = new FileTypeParser({ customDetectors })
 
   const result = await parser.fromBlob(blob)
-  t.deepEqual(result, { ext: 'png', mime: 'image/png' })
+  // t.deepEqual(result, { ext: 'png', mime: 'image/png' })
+  expect(result).to.deep.equal({ ext: 'png', mime: 'image/png' })
 })
 
-test('fileTypeFromBlob should allow overriding default file type detectors', async t => {
-  const file = path.join(__dirname, 'fixture', 'fixture.png')
+it('fileTypeFromBlob should allow overriding default file type detectors', async () => {
+  const file = path.join(fixturePath, 'fixture.png')
   const chunk = fs.readFileSync(file)
   const blob = new Blob([chunk])
 
@@ -717,10 +752,11 @@ test('fileTypeFromBlob should allow overriding default file type detectors', asy
   const parser = new FileTypeParser({ customDetectors })
 
   const result = await parser.fromBlob(blob)
-  t.deepEqual(result, { ext: 'mockPng', mime: 'image/mockPng' })
+  // t.deepEqual(result, { ext: 'mockPng', mime: 'image/mockPng' })
+  expect(result).to.deep.equal({ ext: 'mockPng', mime: 'image/mockPng' })
 })
 
-test('fileTypeFromBuffer should detect custom file type "unicorn" using custom detectors', async t => {
+it('fileTypeFromBuffer should detect custom file type "unicorn" using custom detectors', async () => {
   const header = 'UNICORN FILE\n'
   const uint8ArrayContent = new TextEncoder().encode(header)
 
@@ -728,29 +764,32 @@ test('fileTypeFromBuffer should detect custom file type "unicorn" using custom d
   const parser = new FileTypeParser({ customDetectors })
 
   const result = await parser.fromBuffer(uint8ArrayContent)
-  t.deepEqual(result, { ext: 'unicorn', mime: 'application/unicorn' })
+  // t.deepEqual(result, { ext: 'unicorn', mime: 'application/unicorn' })
+  expect(result).to.deep.equal({ ext: 'unicorn', mime: 'application/unicorn' })
 })
 
-test('fileTypeFromBuffer should keep detecting default file types when no custom detector matches', async t => {
-  const file = path.join(__dirname, 'fixture', 'fixture.png')
+it('fileTypeFromBuffer should keep detecting default file types when no custom detector matches', async () => {
+  const file = path.join(fixturePath, 'fixture.png')
   const uint8ArrayContent = fs.readFileSync(file)
 
   const customDetectors = [unicornDetector]
   const parser = new FileTypeParser({ customDetectors })
 
   const result = await parser.fromBuffer(uint8ArrayContent)
-  t.deepEqual(result, { ext: 'png', mime: 'image/png' })
+  // t.deepEqual(result, { ext: 'png', mime: 'image/png' })
+  expect(result).to.deep.equal({ ext: 'png', mime: 'image/png' })
 })
 
-test('fileTypeFromBuffer should allow overriding default file type detectors', async t => {
-  const file = path.join(__dirname, 'fixture', 'fixture.png')
+it('fileTypeFromBuffer should allow overriding default file type detectors', async () => {
+  const file = path.join(fixturePath, 'fixture.png')
   const uint8ArrayContent = fs.readFileSync(file)
 
   const customDetectors = [mockPngDetector]
   const parser = new FileTypeParser({ customDetectors })
 
   const result = await parser.fromBuffer(uint8ArrayContent)
-  t.deepEqual(result, { ext: 'mockPng', mime: 'image/mockPng' })
+  // t.deepEqual(result, { ext: 'mockPng', mime: 'image/mockPng' })
+  expect(result).to.deep.equal({ ext: 'mockPng', mime: 'image/mockPng' })
 })
 
 // class CustomReadableStream extends stream.Readable {
@@ -758,7 +797,7 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //     this.push('UNICORN')
 //   }
 // }
-// test('fileTypeFromStream should detect custom file type "unicorn" using custom detectors', async t => {
+// it('fileTypeFromStream should detect custom file type "unicorn" using custom detectors', async () => {
 //   const readableStream = new CustomReadableStream();
 
 //   const customDetectors = [unicornDetector];
@@ -768,8 +807,8 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //   t.deepEqual(result, {ext: 'unicorn', mime: 'application/unicorn'});
 // });
 
-// test('fileTypeFromStream should keep detecting default file types when no custom detector matches', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.png');
+// it('fileTypeFromStream should keep detecting default file types when no custom detector matches', async () => {
+//   const file = path.join(fixturePath, 'fixture.png');
 //   const readableStream = fs.createReadStream(file);
 
 //   const customDetectors = [unicornDetector];
@@ -779,8 +818,8 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //   t.deepEqual(result, {ext: 'png', mime: 'image/png'});
 // });
 
-// test('fileTypeFromStream should allow overriding default file type detectors', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.png');
+// it('fileTypeFromStream should allow overriding default file type detectors', async () => {
+//   const file = path.join(fixturePath, 'fixture.png');
 //   const readableStream = fs.createReadStream(file);
 
 //   const customDetectors = [mockPngDetector];
@@ -790,8 +829,8 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //   t.deepEqual(result, {ext: 'mockPng', mime: 'image/mockPng'});
 // });
 
-// test('fileTypeFromFile should detect custom file type "unicorn" using custom detectors', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.unicorn');
+// it('fileTypeFromFile should detect custom file type "unicorn" using custom detectors', async () => {
+//   const file = path.join(fixturePath, 'fixture.unicorn');
 
 //   const customDetectors = [unicornDetector];
 
@@ -799,8 +838,8 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //   t.deepEqual(result, {ext: 'unicorn', mime: 'application/unicorn'});
 // });
 
-// test('fileTypeFromFile should keep detecting default file types when no custom detector matches', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.png');
+// it('fileTypeFromFile should keep detecting default file types when no custom detector matches', async () => {
+//   const file = path.join(fixturePath, 'fixture.png');
 
 //   const customDetectors = [unicornDetector];
 
@@ -808,8 +847,8 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //   t.deepEqual(result, {ext: 'png', mime: 'image/png'});
 // });
 
-// test('fileTypeFromFile should allow overriding default file type detectors', async t => {
-//   const file = path.join(__dirname, 'fixture', 'fixture.png');
+// it('fileTypeFromFile should allow overriding default file type detectors', async () => {
+//   const file = path.join(fixturePath, 'fixture.png');
 
 //   const customDetectors = [mockPngDetector];
 
@@ -817,7 +856,7 @@ test('fileTypeFromBuffer should allow overriding default file type detectors', a
 //   t.deepEqual(result, {ext: 'mockPng', mime: 'image/mockPng'});
 // });
 
-// test('fileTypeFromTokenizer should return undefined when a custom detector changes the tokenizer position and does not return a file type', async t => {
+// it('fileTypeFromTokenizer should return undefined when a custom detector changes the tokenizer position and does not return a file type', async () => {
 //   const header = 'UNICORN FILE\n';
 //   const uint8ArrayContent = new TextEncoder().encode(header);
 
