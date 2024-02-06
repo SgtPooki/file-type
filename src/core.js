@@ -154,6 +154,7 @@ export class FileTypeParser {
     return this.check(stringToBytes(header), options)
   }
 
+  // eslint-disable-next-line complexity
   async parse (tokenizer) {
     this.buffer = alloc(minimumBytes)
 
@@ -1700,4 +1701,3 @@ export class FileTypeParser {
 // export async function fileTypeStream(readableStream, options = {}) {
 //   return new FileTypeParser().toDetectionStream(readableStream, options);
 // }
-

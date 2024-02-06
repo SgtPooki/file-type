@@ -2,7 +2,7 @@
 import { Buffer } from 'node:buffer'
 import fs from 'node:fs'
 import path from 'node:path'
-import stream from 'node:stream'
+// import stream from 'node:stream'
 import { fileURLToPath } from 'node:url'
 import test from 'ava'
 import { Parser as ReadmeParser } from 'commonmark'
@@ -605,15 +605,15 @@ test('validate the repo has all extensions and mimes in sync', t => {
   }
 })
 
-class BufferedStream extends stream.Readable {
-  constructor (buffer) {
-    super()
-    this.push(buffer)
-    this.push(null)
-  }
+// class BufferedStream extends stream.Readable {
+//   constructor (buffer) {
+//     super()
+//     this.push(buffer)
+//     this.push(null)
+//   }
 
-  _read () {}
-}
+//   _read () {}
+// }
 
 test('odd file sizes', async t => {
   const oddFileSizes = [1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 255, 256, 257, 511, 512, 513]
@@ -679,10 +679,10 @@ const unicornDetector = async tokenizer => {
 
 const mockPngDetector = _tokenizer => ({ ext: 'mockPng', mime: 'image/mockPng' })
 
-const tokenizerPositionChanger = tokenizer => {
-  const buffer = Buffer.alloc(1)
-  tokenizer.readBuffer(buffer, { length: 1, mayBeLess: true })
-}
+// const tokenizerPositionChanger = tokenizer => {
+//   const buffer = Buffer.alloc(1)
+//   tokenizer.readBuffer(buffer, { length: 1, mayBeLess: true })
+// }
 
 test('fileTypeFromBlob should detect custom file type "unicorn" using custom detectors', async t => {
   // Set up the "unicorn" file content

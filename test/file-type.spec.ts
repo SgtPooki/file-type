@@ -5,7 +5,8 @@ import {
   fileTypeFromBuffer,
   FileTypeParser,
   supportedExtensions,
-  supportedMimeTypes
+  supportedMimeTypes,
+  type FileTypeResult
 } from '../src/index.js'
 import { getFixtureDataUint8Array } from './get-fixture-data.js'
 
@@ -255,7 +256,7 @@ const failingFixture = new Set([
   'fixture-password-protected'
 ])
 
-async function checkBufferLike (type, bufferLike) {
+async function checkBufferLike (type, bufferLike): Promise<void> {
   const { ext, mime } = await fileTypeFromBuffer(bufferLike) ?? {}
   expect(ext).to.equal(type)
   expect(typeof mime).to.equal('string')
@@ -279,7 +280,7 @@ async function checkBufferLike (type, bufferLike) {
 //   return checkFile(t, ext, file);
 // }
 
-async function testFromBuffer (ext: string, name?: string) {
+async function testFromBuffer (ext: string, name?: string): Promise<void> {
   const fixtureName = `${(name ?? 'fixture')}.${ext}`
   const chunk = await getFixtureDataUint8Array(fixtureName)
 
@@ -296,7 +297,7 @@ async function testFromBuffer (ext: string, name?: string) {
 //   await checkBlobLike(t, ext, chunk)
 // }
 
-async function testFalsePositive (ext, name) {
+async function testFalsePositive (ext, name): Promise<void> {
   const chunk = await getFixtureDataUint8Array(`${name}.${ext}`)
 
   await expect(fileTypeFromBuffer(chunk)).to.eventually.be(undefined)
@@ -478,18 +479,20 @@ it('corrupt MKV throws', async () => {
 })
 
 // Create a custom detector for the just made up "unicorn" file type
-const unicornDetector = async tokenizer => {
+async function unicornDetector (tokenizer): Promise<FileTypeResult | undefined> {
   const unicornHeader = [85, 78, 73, 67, 79, 82, 78] // "UNICORN" as decimal string
   const buffer = alloc(7)
   await tokenizer.peekBuffer(buffer, { length: unicornHeader.length, mayBeLess: true })
   if (unicornHeader.every((value, index) => value === buffer[index])) {
+    // @ts-expect-error - purposefully invalid return
     return { ext: 'unicorn', mime: 'application/unicorn' }
   }
 
   return undefined
 }
 
-const mockPngDetector = _tokenizer => ({ ext: 'mockPng', mime: 'image/mockPng' })
+// @ts-expect-error - purposefully invalid return
+const mockPngDetector = (_tokenizer: unknown): FileTypeResult => ({ ext: 'mockPng', mime: 'image/mockPng' })
 
 // const tokenizerPositionChanger = tokenizer => {
 //   const buffer = Buffer.alloc(1)

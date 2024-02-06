@@ -46,7 +46,7 @@ export class BufferTokenizer extends AbstractTokenizer {
     const normOptions = this.normalizeOptions(uint8Array, options)
 
     const bytes2read = Math.min(this.uint8Array.length - normOptions.position, normOptions.length)
-    if ((!normOptions.mayBeLess) && bytes2read < normOptions.length) {
+    if (normOptions.mayBeLess !== true && bytes2read < normOptions.length) {
       throw new EndOfStreamError()
     } else {
       uint8Array.set(this.uint8Array.subarray(normOptions.position, normOptions.position + bytes2read), normOptions.offset)
