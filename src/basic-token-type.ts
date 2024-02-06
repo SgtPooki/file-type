@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import * as ieee754 from 'ieee754'
-import type { IToken, IGetToken } from '@tokenizer/token'
 import { bufferToString } from './buffer-dataview-tools.js'
+import type { IToken, IGetToken } from '@tokenizer/token'
 // import { Buffer } from 'node:buffer';
 
 // Primitive types
 
-function dv (array: Uint8Array) {
+function dv (array: Uint8Array): DataView {
   return new DataView(array.buffer, array.byteOffset)
 }
 
@@ -414,8 +415,7 @@ export class IgnoreType implements IGetToken<void> {
   }
 
   // ToDo: don't read, but skip data
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  public get (array: Uint8Array, off: number) {
+  public get (array: Uint8Array, off: number): void {
   }
 }
 

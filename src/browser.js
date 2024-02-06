@@ -12,3 +12,5 @@ export {
   fileTypeFromTokenizer,
   fileTypeFromBuffer
 } from './core.js'
+
+export * from './types.js'

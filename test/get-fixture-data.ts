@@ -1,5 +1,4 @@
 async function getFixtureData (filename: string): Promise<Response> {
-
   const fixtureDataResp = await fetch(`${process.env.FIXTURE_DATA_SERVER}/${filename}`, { method: 'GET' })
 
   if (!fixtureDataResp.ok) throw new Error(`Failed to fetch ${filename}: ${fixtureDataResp.statusText}`)

@@ -84,8 +84,7 @@
       "fixture/"
     ],
     "rules": {
-      "max-depth": "warn",
-      "naming-convention": "warn"
+      "max-depth": "warn"
     }
   },
   "release": {

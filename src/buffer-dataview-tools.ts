@@ -39,7 +39,12 @@ export function stringToBuffer (str: string, encoding?: string): Uint8Array {
   if (encoding === 'binary') {
     return new TextEncoder().encode(str)
   } else if (encoding === 'hex') {
-    return new Uint8Array(str.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)))
+    const matches = str.match(/.{1,2}/g)
+    if (matches == null) {
+      throw new Error('Invalid hex string')
+    }
+
+    return new Uint8Array(matches.map(byte => parseInt(byte, 16)))
   }
   return new TextEncoder().encode(str)
 }

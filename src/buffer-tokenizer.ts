@@ -12,7 +12,7 @@ export class BufferTokenizer extends AbstractTokenizer {
    */
   constructor (private readonly uint8Array: Uint8Array, fileInfo?: IFileInfo) {
     super(fileInfo)
-    this.fileInfo.size = this.fileInfo.size ? this.fileInfo.size : uint8Array.length
+    this.fileInfo.size = this.fileInfo.size ?? uint8Array.length
   }
 
   /**

@@ -1,14 +1,13 @@
 /* eslint-env mocha */
+import { expect } from 'aegir/chai'
+import { alloc } from 'uint8arrays/alloc'
 import {
   fileTypeFromBuffer,
   FileTypeParser,
   supportedExtensions,
   supportedMimeTypes
 } from '../src/index.js'
-import { expect } from 'aegir/chai'
 import { getFixtureDataUint8Array } from './get-fixture-data.js'
-import { alloc } from 'uint8arrays/alloc'
-
 
 const missingTests = new Set([
   'mpc'
@@ -346,9 +345,9 @@ for (const type of types) {
       // _test(`${name}.${type} ${i++} .fileTypeFromFile() method - same fileType`, testFromFile, type, name);
       // _test(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, testFromBuffer, type, name)
       // describe(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, async () => {
-        _test(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, async () => {
-          await testFromBuffer(type, name)
-        })
+      _test(`${name}.${type} ${i++} .fileTypeFromBuffer() method - same fileType`, async () => {
+        await testFromBuffer(type, name)
+      })
       // })
       // _test(`${name}.${type} ${i++} .fileTypeFromBlob() method - same fileType`, testFromBlob, type, name);
       // _test(`${name}.${type} ${i++} .fileTypeFromStream() method - same fileType`, testFileFromStream, type, name);
@@ -362,9 +361,9 @@ for (const type of types) {
     // _test(`${type} ${i++} .fileTypeFromFile()`, testFromFile, type);
     // _test(`${type} ${i++} .fileTypeFromBuffer()`, testFromBuffer, type)
     // describe(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
-      _test(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
-        await testFromBuffer(type)
-      })
+    _test(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
+      await testFromBuffer(type)
+    })
     // })
     // _test(`${type} ${i++} .fileTypeFromStream()`, testFileFromStream, type);
     // it(`${type} ${i++} .fileTypeStream() - identical streams`, testStream, type);
@@ -435,11 +434,13 @@ for (const type of types) {
 
 it('supportedExtensions.has', () => {
   expect(supportedExtensions.has('jpg')).to.be.true()
+  // @ts-expect-error - purposefully invalid input
   expect(supportedExtensions.has('blah')).to.be.false()
 })
 
 it('supportedMimeTypes.has', () => {
   expect(supportedMimeTypes.has('video/mpeg')).to.be.true()
+  // @ts-expect-error - purposefully invalid input
   expect(supportedMimeTypes.has('video/blah')).to.be.false()
 })
 
@@ -469,7 +470,6 @@ it('odd file sizes', async () => {
   //   await t.notThrowsAsync(fileTypeFromStream(stream), `fromStream: File size: ${size} bytes`);
   // }
 })
-
 
 it('corrupt MKV throws', async () => {
   const fileContent = await getFixtureDataUint8Array('fixture-corrupt.mkv')

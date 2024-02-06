@@ -2,7 +2,6 @@ import { alloc } from 'uint8arrays/alloc'
 import * as Token from './basic-token-type.js'
 import { bufferIncludes, bufferIndexOf, bufferToString, readUInt16LE, readUInt32LE, readUIntBE } from './buffer-dataview-tools.js'
 import { BufferTokenizer, EndOfStreamError } from './buffer-tokenizer.js'
-import { extensions, mimeTypes } from './supported.js'
 import {
   stringToBytes,
   tarHeaderChecksumMatches,
@@ -1702,5 +1701,3 @@ export class FileTypeParser {
 //   return new FileTypeParser().toDetectionStream(readableStream, options);
 // }
 
-export const supportedExtensions = new Set(extensions)
-export const supportedMimeTypes = new Set(mimeTypes)

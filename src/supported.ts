@@ -151,7 +151,7 @@ export const extensions = [
   'avro',
   'icc',
   'fbx'
-]
+] as const
 
 export const mimeTypes = [
   'image/jpeg',
@@ -301,4 +301,4 @@ export const mimeTypes = [
   'application/avro',
   'application/vnd.iccprofile',
   'application/x.autodesk.fbx' // Invented by us
-]
+] as const
