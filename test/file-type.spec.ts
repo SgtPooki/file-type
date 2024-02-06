@@ -6,9 +6,10 @@ import {
   FileTypeParser,
   supportedExtensions,
   supportedMimeTypes,
-  type FileTypeResult
+  type FileTypeResult,
+  fileTypeFromBlob
 } from '../src/index.js'
-import { getFixtureDataUint8Array } from './get-fixture-data.js'
+import { getFixtureDataBlob, getFixtureDataUint8Array } from './get-fixture-data.js'
 
 const missingTests = new Set([
   'mpc'
@@ -256,18 +257,17 @@ const failingFixture = new Set([
   'fixture-password-protected'
 ])
 
-async function checkBufferLike (type, bufferLike): Promise<void> {
+async function checkBufferLike (type: string, bufferLike: ArrayBufferLike): Promise<void> {
   const { ext, mime } = await fileTypeFromBuffer(bufferLike) ?? {}
   expect(ext).to.equal(type)
   expect(typeof mime).to.equal('string')
 }
 
-// async function checkBlobLike(t, type, bufferLike) {
-//   const blob = new Blob([bufferLike]);
-//   const {ext, mime} = await fileTypeFromBlob(blob) ?? {};
-//   t.is(ext, type);
-//   t.is(typeof mime, 'string');
-// }
+async function checkBlobLike (type: string, blob: Blob): Promise<void> {
+  const { ext, mime } = await fileTypeFromBlob(blob) ?? {}
+  expect(ext).to.equal(type)
+  expect(typeof mime).to.equal('string')
+}
 
 // async function checkFile(t, type, filePath) {
 //   const {ext, mime} = await fileTypeFromFile(filePath) ?? {};
@@ -289,13 +289,12 @@ async function testFromBuffer (ext: string, name?: string): Promise<void> {
   await checkBufferLike(ext, chunk.buffer.slice(chunk.byteOffset, chunk.byteOffset + chunk.byteLength))
 }
 
-// async function testFromBlob (t, ext, name) {
-//   const fixtureName = `${(name ?? 'fixture')}.${ext}`
+async function testFromBlob (ext: string, name?: string): Promise<void> {
+  const fixtureName = `${(name ?? 'fixture')}.${ext}`
 
-//   const file = path.join(fixturePath, fixtureName)
-//   const chunk = fs.readFileSync(file)
-//   await checkBlobLike(t, ext, chunk)
-// }
+  const blob = await getFixtureDataBlob(fixtureName)
+  await checkBlobLike(ext, blob)
+}
 
 async function testFalsePositive (ext, name): Promise<void> {
   const chunk = await getFixtureDataUint8Array(`${name}.${ext}`)
@@ -350,7 +349,9 @@ for (const type of types) {
         await testFromBuffer(type, name)
       })
       // })
-      // _test(`${name}.${type} ${i++} .fileTypeFromBlob() method - same fileType`, testFromBlob, type, name);
+      _test(`${name}.${type} ${i++} .fileTypeFromBlob() method - same fileType`, async () => {
+        await testFromBlob(type, name)
+      })
       // _test(`${name}.${type} ${i++} .fileTypeFromStream() method - same fileType`, testFileFromStream, type, name);
       // it(`${name}.${type} ${i++} .fileTypeStream() - identical streams`, testStream, type, name);
     }
@@ -364,6 +365,9 @@ for (const type of types) {
     // describe(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
     _test(`${type} ${i++} .fileTypeFromBuffer()`, async () => {
       await testFromBuffer(type)
+    })
+    _test(`${type} ${i++} .fileTypeFromBlob()`, async () => {
+      await testFromBlob(type)
     })
     // })
     // _test(`${type} ${i++} .fileTypeFromStream()`, testFileFromStream, type);

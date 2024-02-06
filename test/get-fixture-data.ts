@@ -12,3 +12,9 @@ export async function getFixtureDataUint8Array (filename: string): Promise<Uint8
 
   return new Uint8Array(await fixtureDataResp.arrayBuffer())
 }
+
+export async function getFixtureDataBlob (filename: string): Promise<Blob> {
+  const fixtureDataResp = await getFixtureData(filename)
+
+  return fixtureDataResp.blob()
+}

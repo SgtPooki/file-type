@@ -20,9 +20,9 @@ export async function fileTypeFromBuffer (input) {
   return new FileTypeParser().fromBuffer(input)
 }
 
-// export async function fileTypeFromBlob(blob) {
-//   return new FileTypeParser().fromBlob(blob);
-// }
+export async function fileTypeFromBlob (blob) {
+  return new FileTypeParser().fromBlob(blob)
+}
 
 function _check (buffer, headers, options) {
   options = {

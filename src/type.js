@@ -6,7 +6,7 @@ import { fileTypeFromBuffer } from './index.js'
 
 const [file] = process.argv.slice(2)
 
-if (!file) {
+if (file == null) {
   console.error('Expected path of the file to examine')
   process.exit()
 }
@@ -15,7 +15,7 @@ const buffer = await readFile(file)
 
 const fileType = await fileTypeFromBuffer(buffer)
 
-if (fileType) {
+if (fileType != null) {
   console.log(`MIME-type: ${fileType.mime}`)
   console.log(`Extension: ${fileType.ext}`)
 } else {
