@@ -1,3 +1,15 @@
+## [1.0.1](https://github.com/sgtpooki/file-type/compare/v1.0.0...v1.0.1) (2024-02-07)
+
+
+### Bug Fixes
+
+* re-enable fileTypeFromBlob ([7ad796a](https://github.com/sgtpooki/file-type/commit/7ad796aa5e740666ab09c9ca40dd033d45a20674))
+
+
+### Trivial Changes
+
+* release main ([#2](https://github.com/sgtpooki/file-type/issues/2)) ([0195e90](https://github.com/sgtpooki/file-type/commit/0195e90254c550472d6ba68a5fc529f43a61d74b))
+
 ## 1.0.0 (2024-02-06)
 
 
